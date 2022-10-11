@@ -1,13 +1,5 @@
 #include "BluetoothSerial.h"
 
-/* Check if Bluetooth configurations are enabled in the SDK */
-/* If not, then you have to recompile the SDK */
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-    #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
-
-BluetoothSerial SerialBT;
-
 #define     COLD_VALVE          13
 #define     HOT_VALVE           14
 #define     DRAIN_VALVE         27
@@ -21,12 +13,10 @@ BluetoothSerial SerialBT;
 #define     UP_TERMOSTAT        39
 
 #define     MINUTE_TO_MILIS     60 * 1000
+#define     SECOND_TO_MILIS     1000
 
-String BTData;
-
-int Total_Wash_Time = 0; // In minute
-int Wash_Time = 0;
-int Rinse_Time = 0;
+BluetoothSerial SerialBT;
+byte BTData;
 
 typedef enum {
     STOP    =   0,
@@ -36,7 +26,7 @@ typedef enum {
 
 DeviceMode Mode;
 
-/* Cold Vavle */
+/* Cold Valve */
 void open_cold_valve(){
     SerialBT.println("open_cold_valve");
     digitalWrite(COLD_VALVE, HIGH);
@@ -47,18 +37,18 @@ void close_cold_valve(){
     digitalWrite(COLD_VALVE, LOW);
 }
 
-/* Hot Vavle */
+/* Hot Valve */
 void open_hot_valve(){
-    SerialBT.println("turn_on_hot_valve");
+    SerialBT.println("open_hot_valve");
     digitalWrite(HOT_VALVE, HIGH);
 }
 
 void close_hot_valve(){
-    SerialBT.println("turn_off_hot_valve");
+    SerialBT.println("close_hot_valve");
     digitalWrite(HOT_VALVE, LOW);
 }
 
-/* Drain Vavle */
+/* Drain Valve */
 void open_drain_valve(){
     SerialBT.println("open_drain_valve");
     digitalWrite(DRAIN_VALVE, HIGH);
@@ -101,7 +91,7 @@ void stop() {
 
 /* Speed */
 void rotate_fast() {
-    SerialBT.println("rotate_cw");
+    SerialBT.println("rotate_fast");
     digitalWrite(SPEED, HIGH);
 }
 
@@ -128,50 +118,12 @@ void setup()
     SerialBT.begin();
 }
 
-void loop()
-{
-    if (SerialBT.available())
-    {
-        // BTData = SerialBT.readString();
-        // Total_Wash_Time = BTData.toInt();
-        fill_water();
-        wash(30 * MINUTE_TO_MILIS);
-        pump_water_out();
-        fill_water();
-        wash(20 * MINUTE_TO_MILIS);
-        pump_water_out();
-        dry(10 * MINUTE_TO_MILIS);
-    }
-
-    /* 48 for 0 and 49 for 1 */
-    // if(Total_Wash_Time == 1)
-    // {
-    //     Mode = START;
-    // }
-    // /* If received Character is 0, then turn OFF the LED */
-    // if(BTData == 0)
-    // {
-    //     Mode = STOP;
-    // }
-
-    // if(Mode == START)
-    // {
-    //     fill_water();
-    // }
-    // else if (Mode == STOP)
-    // {
-    //     pump_out_water();
-    // }
-    
-    // delay(1000);
-}
-
 void fill_water() {
     SerialBT.println("fill_water");
-    close_drain_valve();
     open_cold_valve();
     open_hot_valve();
-    while(digitalRead(PRESSURE_SENSOR) == LOW);
+    // while(digitalRead(PRESSURE_SENSOR) == LOW);
+    delay(135 * 1000);
     close_cold_valve();
     close_hot_valve();
 }
@@ -179,39 +131,59 @@ void fill_water() {
 void pump_water_out() {
     SerialBT.println("pump_out_water");
     open_drain_valve();
-    delay(45 * 1000);
+    delay(40 * 1000);
     close_drain_valve();
 }
 
 void wash(int time) {
     SerialBT.println("washing");
-    for(int i = 0; i < int(time / MINUTE_TO_MILIS); i++) {
+    for(int i = 0; i < int(time / 8000); i++) {
         if(i % 2 == 0) {
-            rotate_ccw();
+          rotate_cw();
+            
         }
         else {
-            rotate_cw();
+            rotate_ccw();
         }
         rotate_slow();
-        delay(MINUTE_TO_MILIS);
+        delay(8000);
         stop();
-        delay(2000);
+        delay(4000);
     }
 }
 
 void dry(int time) {
     SerialBT.println("drying");
-    for(int i = 0; i < int(time / MINUTE_TO_MILIS); i++) {
-        if(i % 2 == 0) {
-            rotate_ccw();
-        }
-        else {
-            rotate_cw();
-        }
-        rotate_fast();
-        delay(MINUTE_TO_MILIS);
-        stop();
-        delay(5000);
-    }
+    open_drain_valve();
+    rotate_cw();
     rotate_slow();
+    delay(5000);
+    rotate_fast();
+    delay(time);
+    close_drain_valve();
+    stop();
+}
+
+void loop()
+{
+    if (SerialBT.available())
+    {
+        BTData = SerialBT.read();
+    }
+
+    if(BTData == '1')
+    {
+        BTData = 0;
+        fill_water();
+        wash(10 * MINUTE_TO_MILIS);
+        pump_water_out();
+        fill_water();
+        wash(10 * MINUTE_TO_MILIS);
+        pump_water_out();
+        dry(1    * MINUTE_TO_MILIS);
+        fill_water();
+        wash(10 * MINUTE_TO_MILIS);
+        pump_water_out();
+        dry(2    * MINUTE_TO_MILIS);
+    }
 }

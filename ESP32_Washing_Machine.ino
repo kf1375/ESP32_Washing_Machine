@@ -1,4 +1,5 @@
 #include "BluetoothSerial.h"
+#include <StopWatch.h>
 
 #define     COLD_VALVE          13
 #define     HOT_VALVE           14
@@ -12,13 +13,12 @@
 #define     BOTTOM_TERMOSTAT    39
 #define     UP_TERMOSTAT        36
 
-const unsigned long MINUTE_TO_MILIS = 60000UL;
-
 BluetoothSerial SerialBT;
 byte BTData;
 
 bool TermoState;
-long t0   = 0;
+
+StopWatch SW(StopWatch::MINUTES);
 
 typedef enum {
     STOP    =   0,
@@ -149,32 +149,49 @@ void pump_water_out() {
     close_drain_valve();
 }
 
-void wash(int time) {
+void wash(uint32_t time) {
     // SerialBT.println("washing");
-    for(int i = 0; i < int(time / 8000); i++) {
-        if(i % 2 == 0) {
-          rotate_cw();
-            
-        }
-        else {
-            rotate_ccw();
-        }
-        rotate_slow();
-        delay(8000);
-        stop();
-        delay(4000);
+    uint32_t elapsed_time = 0;
+    SW.start();
+    for(;;)
+    {
+      elapsed_time = SW.elapsed();
+      SerialBT.println(elapsed_time);
+      if(elapsed_time == time) break;
+      rotate_cw();
+      delay(8000);
+      stop();
+      delay(1000);
+      rotate_ccw();
+      delay(8000);
+      stop();
+      delay(1000);
     }
+    SW.stop();
+    SW.reset();
+    rotate_slow();
+    delay(8000);
+    stop();
+    delay(4000);
 }
 
-void dry(int time) {
-    // SerialBT.println("drying");
+void dry(uint32_t time) {
+    uint32_t elapsed_time = 0;
+    SW.start(); 
     open_drain_valve();
     rotate_slow();
     rotate_ccw();
     delay(2000);
     rotate_fast();
-    rotate_cw();
-    delay(time);
+    for(;;)
+    {
+      elapsed_time = SW.elapsed();
+      SerialBT.println(elapsed_time);
+      if(elapsed_time == time) break;
+      rotate_cw();
+    }
+    SW.stop();
+    SW.reset();
     close_drain_valve();
     rotate_slow();
     stop();
@@ -187,91 +204,91 @@ void loop()
         BTData = SerialBT.read();
     }
 
-    if(BTData == '1')
-    {
-        BTData = 0;
-        // Step 1
-        SerialBT.println("Fill 1/5");
+    // if(BTData == '1')
+    // {
+    //     BTData = 0;
+    //     // Step 1
+    // SerialBT.println("Fill 1/5");
         fill_water();
-        delay(5000);
+        // delay(5000);
 
-        SerialBT.println("Wash 1/5");
-        wash(5 * MINUTE_TO_MILIS);
+        // SerialBT.println("Wash 1/5");
+        wash(5);
 
-        SerialBT.println("Pump 1/5");
+        // SerialBT.println("Pump 1/5");
         pump_water_out();
-        delay(5000);
+        // delay(5000);
 
         // Step 2
-        SerialBT.println("Fill 2/5");
+        // SerialBT.println("Fill 2/5");
         fill_water();
-        delay(5000);
+        // delay(5000);
 
-        SerialBT.println("Wash 2/5");
-        wash(5 * MINUTE_TO_MILIS);
+        // SerialBT.println("Wash 2/5");
+        wash(5);
 
-        SerialBT.println("Pump 2/5");
+        // SerialBT.println("Pump 2/5");
         pump_water_out();
-        delay(5000);
+        // delay(5000);
 
         // Dry 1
-        SerialBT.println("Dry 1/4");
-        dry(2    * MINUTE_TO_MILIS);
-        delay(5000);
+        // SerialBT.println("Dry 1/4");
+        dry(2);
+        // delay(5000);
 
         // Step 3
-        SerialBT.println("Fill 3/5");
+        // SerialBT.println("Fill 3/5");
         fill_water();
-        delay(5000);
+        // delay(5000);
 
-        SerialBT.println("Wash 3/5");
-        wash(5 * MINUTE_TO_MILIS);
-        delay(5000);
+        // SerialBT.println("Wash 3/5");
+        wash(5);
+        // delay(5000);
 
-        SerialBT.println("Pump 3/5");
+        // SerialBT.println("Pump 3/5");
         pump_water_out();
-        delay(5000);
+        // delay(5000);
 
         // Dry 2
-        SerialBT.println("Dry 2/4");
-        dry(2    * MINUTE_TO_MILIS);
-        delay(5000);
+        // SerialBT.println("Dry 2/4");
+        dry(2);
+        // delay(5000);
         
         // Step 4
-        SerialBT.println("Fill 4/5");
+        // SerialBT.println("Fill 4/5");
         fill_water();
-        delay(5000);
+        // delay(5000);
 
-        SerialBT.println("Wash 4/5");
-        wash(5 * MINUTE_TO_MILIS);
-        delay(5000);
+        // SerialBT.println("Wash 4/5");
+        wash(5);
+        // delay(5000);
 
-        SerialBT.println("Pump 4/5");
+        // SerialBT.println("Pump 4/5");
         pump_water_out();
-        delay(5000);
+        // delay(5000);
 
         // Dry 3
-        SerialBT.println("Dry 3/4");
-        dry(2    * MINUTE_TO_MILIS);
-        delay(5000);
+        // SerialBT.println("Dry 3/4");
+        dry(2);
+        // delay(5000);
 
         // Step 5
-        SerialBT.println("Fill 5/5");
+        // SerialBT.println("Fill 5/5");
         fill_water();
-        delay(5000);
+        // delay(5000);
 
-        SerialBT.println("Wash 5/5");
-        wash(5 * MINUTE_TO_MILIS);
-        delay(5000);
+        // SerialBT.println("Wash 5/5");
+        wash(5);
+        // delay(5000);
 
-        SerialBT.println("Pump 5/5");
+        // SerialBT.println("Pump 5/5");
         pump_water_out();
-        delay(5000);
+        // delay(5000);
 
         // Dry 4
-        SerialBT.println("Dry 4/4");
-        dry(2    * MINUTE_TO_MILIS);
-        delay(5000);
+        // SerialBT.println("Dry 4/4");
+        dry(2);
+        // delay(5000);
         
-    }
+    // }
 }

@@ -134,9 +134,9 @@ void fill_water() {
       else {
         open_hot_valve();
       }
-      delay(500);
+      milis_delay(500);
     }
-    delay(1000);
+    milis_delay(1000);
     // delay(135 * 1000);
     close_cold_valve();
     close_hot_valve();
@@ -145,7 +145,7 @@ void fill_water() {
 void pump_water_out() {
     // SerialBT.println("pump_out_water");
     open_drain_valve();
-    delay(52 * 1000);
+    milis_delay(52 * 1000);
     close_drain_valve();
 }
 
@@ -159,20 +159,21 @@ void wash(uint32_t time) {
       SerialBT.println(elapsed_time);
       if(elapsed_time == time) break;
       rotate_cw();
-      delay(8000);
+
+      milis_delay(8 * 1000);
       stop();
-      delay(1000);
+      milis_delay(1000);
       rotate_ccw();
-      delay(8000);
+      milis_delay(8 * 1000);
       stop();
-      delay(1000);
+      milis_delay(1000);
     }
     SW.stop();
     SW.reset();
     rotate_slow();
-    delay(8000);
+    milis_delay(8 * 1000);
     stop();
-    delay(4000);
+    milis_delay(2 * 1000);
 }
 
 void dry(uint32_t time) {
@@ -181,7 +182,7 @@ void dry(uint32_t time) {
     open_drain_valve();
     rotate_slow();
     rotate_ccw();
-    delay(2000);
+    milis_delay(2 * 1000);
     rotate_fast();
     for(;;)
     {
@@ -204,91 +205,97 @@ void loop()
         BTData = SerialBT.read();
     }
 
-    // if(BTData == '1')
-    // {
-    //     BTData = 0;
-    //     // Step 1
-    // SerialBT.println("Fill 1/5");
+    if(BTData == '1')
+    {
+        BTData = 0;
+        // Step 1
+        SerialBT.println("Fill 1/5");
         fill_water();
         // delay(5000);
 
-        // SerialBT.println("Wash 1/5");
+        SerialBT.println("Wash 1/5");
         wash(5);
 
-        // SerialBT.println("Pump 1/5");
+        SerialBT.println("Pump 1/5");
         pump_water_out();
         // delay(5000);
 
         // Step 2
-        // SerialBT.println("Fill 2/5");
+        SerialBT.println("Fill 2/5");
         fill_water();
         // delay(5000);
 
-        // SerialBT.println("Wash 2/5");
+        SerialBT.println("Wash 2/5");
         wash(5);
 
-        // SerialBT.println("Pump 2/5");
+        SerialBT.println("Pump 2/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 1
-        // SerialBT.println("Dry 1/4");
+        SerialBT.println("Dry 1/4");
         dry(2);
         // delay(5000);
 
         // Step 3
-        // SerialBT.println("Fill 3/5");
+        SerialBT.println("Fill 3/5");
         fill_water();
         // delay(5000);
 
-        // SerialBT.println("Wash 3/5");
+        SerialBT.println("Wash 3/5");
         wash(5);
         // delay(5000);
 
-        // SerialBT.println("Pump 3/5");
+        SerialBT.println("Pump 3/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 2
-        // SerialBT.println("Dry 2/4");
+        SerialBT.println("Dry 2/4");
         dry(2);
         // delay(5000);
         
         // Step 4
-        // SerialBT.println("Fill 4/5");
+        SerialBT.println("Fill 4/5");
         fill_water();
         // delay(5000);
 
-        // SerialBT.println("Wash 4/5");
+        SerialBT.println("Wash 4/5");
         wash(5);
         // delay(5000);
 
-        // SerialBT.println("Pump 4/5");
+        SerialBT.println("Pump 4/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 3
-        // SerialBT.println("Dry 3/4");
+        SerialBT.println("Dry 3/4");
         dry(2);
         // delay(5000);
 
         // Step 5
-        // SerialBT.println("Fill 5/5");
+        SerialBT.println("Fill 5/5");
         fill_water();
         // delay(5000);
 
-        // SerialBT.println("Wash 5/5");
+        SerialBT.println("Wash 5/5");
         wash(5);
         // delay(5000);
 
-        // SerialBT.println("Pump 5/5");
+        SerialBT.println("Pump 5/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 4
-        // SerialBT.println("Dry 4/4");
+        SerialBT.println("Dry 4/4");
         dry(2);
         // delay(5000);
         
-    // }
+    }
+}
+
+void milis_delay(unsigned long duration)
+{
+    unsigned long time = millis();
+    while (millis() < time + duration);
 }

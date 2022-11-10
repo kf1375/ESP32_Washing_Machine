@@ -1,4 +1,4 @@
-#include "BluetoothSerial.h"
+// #include "BluetoothSerial.h"
 #include <StopWatch.h>
 
 #define     COLD_VALVE          13
@@ -13,7 +13,7 @@
 #define     BOTTOM_TERMOSTAT    39
 #define     UP_TERMOSTAT        36
 
-BluetoothSerial SerialBT;
+// BluetoothSerial SerialBT;
 byte BTData;
 
 bool TermoState;
@@ -117,7 +117,7 @@ void setup()
     pinMode(BOTTOM_TERMOSTAT,   INPUT);
     pinMode(UP_TERMOSTAT,       INPUT);
     
-    SerialBT.begin();
+    // SerialBT.begin();
 }
 
 void fill_water() {
@@ -156,17 +156,15 @@ void wash(uint32_t time) {
     for(;;)
     {
       elapsed_time = SW.elapsed();
-      SerialBT.println(elapsed_time);
       if(elapsed_time == time) break;
       rotate_cw();
-
       milis_delay(8 * 1000);
       stop();
-      milis_delay(1000);
+      milis_delay(2000);
       rotate_ccw();
       milis_delay(8 * 1000);
       stop();
-      milis_delay(1000);
+      milis_delay(2000);
     }
     SW.stop();
     SW.reset();
@@ -187,7 +185,6 @@ void dry(uint32_t time) {
     for(;;)
     {
       elapsed_time = SW.elapsed();
-      SerialBT.println(elapsed_time);
       if(elapsed_time == time) break;
       rotate_cw();
     }
@@ -200,99 +197,100 @@ void dry(uint32_t time) {
 
 void loop()
 {
-    if (SerialBT.available())
-    {
-        BTData = SerialBT.read();
-    }
+    // if (SerialBT.available())
+    // {
+    //     BTData = SerialBT.read();
+    // }
 
-    if(BTData == '1')
-    {
-        BTData = 0;
+    // if(BTData == '1')
+    // {
+    //     BTData = 0;
         // Step 1
-        SerialBT.println("Fill 1/5");
+        // SerialBT.println("Fill 1/5");
         fill_water();
         // delay(5000);
 
-        SerialBT.println("Wash 1/5");
+        // SerialBT.println("Wash 1/5");
         wash(5);
 
-        SerialBT.println("Pump 1/5");
+        // SerialBT.println("Pump 1/5");
         pump_water_out();
         // delay(5000);
 
         // Step 2
-        SerialBT.println("Fill 2/5");
+        // SerialBT.println("Fill 2/5");
         fill_water();
         // delay(5000);
 
-        SerialBT.println("Wash 2/5");
+        // SerialBT.println("Wash 2/5");
         wash(5);
 
-        SerialBT.println("Pump 2/5");
+        // SerialBT.println("Pump 2/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 1
-        SerialBT.println("Dry 1/4");
+        // SerialBT.println("Dry 1/4");
         dry(2);
         // delay(5000);
 
         // Step 3
-        SerialBT.println("Fill 3/5");
+        // SerialBT.println("Fill 3/5");
         fill_water();
         // delay(5000);
 
-        SerialBT.println("Wash 3/5");
+        // SerialBT.println("Wash 3/5");
         wash(5);
         // delay(5000);
 
-        SerialBT.println("Pump 3/5");
+        // SerialBT.println("Pump 3/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 2
-        SerialBT.println("Dry 2/4");
+        // SerialBT.println("Dry 2/4");
         dry(2);
         // delay(5000);
         
         // Step 4
-        SerialBT.println("Fill 4/5");
+        // SerialBT.println("Fill 4/5");
         fill_water();
         // delay(5000);
 
-        SerialBT.println("Wash 4/5");
+        // SerialBT.println("Wash 4/5");
         wash(5);
         // delay(5000);
 
-        SerialBT.println("Pump 4/5");
+        // SerialBT.println("Pump 4/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 3
-        SerialBT.println("Dry 3/4");
+        // SerialBT.println("Dry 3/4");
         dry(2);
         // delay(5000);
 
         // Step 5
-        SerialBT.println("Fill 5/5");
+        // SerialBT.println("Fill 5/5");
         fill_water();
         // delay(5000);
 
-        SerialBT.println("Wash 5/5");
+        // SerialBT.println("Wash 5/5");
         wash(5);
         // delay(5000);
 
-        SerialBT.println("Pump 5/5");
+        // SerialBT.println("Pump 5/5");
         pump_water_out();
         // delay(5000);
 
         // Dry 4
-        SerialBT.println("Dry 4/4");
-        dry(2);
+        // SerialBT.println("Dry 4/4");
+        dry(3);
         // delay(5000);
         
-    }
+    // }
 }
+
 
 void milis_delay(unsigned long duration)
 {

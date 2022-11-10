@@ -118,6 +118,7 @@ void setup()
     pinMode(UP_TERMOSTAT,       INPUT);
     
     // SerialBT.begin();
+    do_work();
 }
 
 void fill_water() {
@@ -205,7 +206,19 @@ void loop()
     // if(BTData == '1')
     // {
     //     BTData = 0;
-        // Step 1
+    // }
+}
+
+
+void milis_delay(unsigned long duration)
+{
+    unsigned long time = millis();
+    while (millis() < time + duration);
+}
+
+void do_work()
+{
+          // Step 1
         // SerialBT.println("Fill 1/5");
         fill_water();
         // delay(5000);
@@ -287,13 +300,20 @@ void loop()
         // SerialBT.println("Dry 4/4");
         dry(3);
         // delay(5000);
-        
-    // }
-}
 
+        // Step 6
+        fill_water();
+        // delay(5000);
 
-void milis_delay(unsigned long duration)
-{
-    unsigned long time = millis();
-    while (millis() < time + duration);
+        // SerialBT.println("Wash 5/5");
+        wash(5);
+        // delay(5000);
+
+        // SerialBT.println("Pump 5/5");
+        pump_water_out();
+        // delay(5000);
+
+        // Dry 4
+        // SerialBT.println("Dry 4/4");
+        dry(3);
 }

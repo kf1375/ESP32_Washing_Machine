@@ -1,6 +1,11 @@
 #include "BluetoothSerial.h"
 #include <StopWatch.h>
 
+#define     ON                  1
+#define     OFF                 0
+
+#define     INPUT_SSR           23
+
 #define     COLD_VALVE          13
 #define     HOT_VALVE           14
 #define     DRAIN_VALVE         27
@@ -58,6 +63,7 @@ void open_drain_valve(){
 
 void close_drain_valve(){
     // SerialBT.println("close_drain_valve");
+    set_input_ssr(OFF);
     digitalWrite(DRAIN_VALVE, LOW);
 }
 
@@ -105,6 +111,7 @@ void rotate_slow(){
 void setup()
 {
     // put your setup code here, to run once:
+    pinMode(INPUT_SSR,      OUTPUT);
     pinMode(COLD_VALVE,     OUTPUT);
     pinMode(HOT_VALVE,      OUTPUT);
     pinMode(DRAIN_VALVE,    OUTPUT);
@@ -122,11 +129,11 @@ void setup()
 
 void fill_water() {
     // SerialBT.println("fill_water");
-    open_cold_valve();
-    open_hot_valve();
     //SerialBT.println(digitalRead(PRESSURE_SENSOR));
+    set_input_ssr(ON);
     while(digitalRead(PRESSURE_SENSOR) == LOW)
     {
+      open_cold_valve();
       TermoState = digitalRead(UP_TERMOSTAT);
       if(TermoState) {
         close_hot_valve();
@@ -138,6 +145,7 @@ void fill_water() {
     }
     milis_delay(1000);
     // delay(135 * 1000);
+    set_input_ssr(OFF);
     close_cold_valve();
     close_hot_valve();
 }
@@ -145,6 +153,7 @@ void fill_water() {
 void pump_water_out() {
     // SerialBT.println("pump_out_water");
     open_drain_valve();
+    set_input_ssr(ON);
     milis_delay(52 * 1000);
     close_drain_valve();
 }
@@ -157,42 +166,50 @@ void wash(uint32_t time) {
     {
       elapsed_time = SW.elapsed();
       if(elapsed_time == time) break;
+      rotate_slow();
       rotate_cw();
+      set_input_ssr(ON);
       milis_delay(8 * 1000);
+      set_input_ssr(OFF);
       stop();
       milis_delay(2000);
+      rotate_slow();
       rotate_ccw();
+      set_input_ssr(ON);
       milis_delay(8 * 1000);
+      set_input_ssr(OFF);
       stop();
-      milis_delay(2000);
     }
+    set_input_ssr(OFF);
+    stop();
     SW.stop();
     SW.reset();
-    rotate_slow();
-    milis_delay(8 * 1000);
-    stop();
-    milis_delay(2 * 1000);
 }
 
 void dry(uint32_t time) {
     uint32_t elapsed_time = 0;
-    SW.start(); 
+    SW.start();
     open_drain_valve();
     rotate_slow();
     rotate_ccw();
+    set_input_ssr(ON);
     milis_delay(2 * 1000);
+    set_input_ssr(OFF);
+    stop();
     rotate_fast();
     for(;;)
     {
       elapsed_time = SW.elapsed();
       if(elapsed_time == time) break;
       rotate_cw();
+      set_input_ssr(ON);
     }
     SW.stop();
     SW.reset();
-    close_drain_valve();
+    set_input_ssr(OFF);
     rotate_slow();
     stop();
+    close_drain_valve();
 }
 
 void loop()
@@ -284,4 +301,11 @@ void do_work()
         // Dry 5
         SerialBT.println("Dry 5/5");
         dry(3);
+}
+
+void set_input_ssr(bool state)
+{
+    milis_delay(400);
+    digitalWrite(INPUT_SSR, state);
+    milis_delay(400);
 }

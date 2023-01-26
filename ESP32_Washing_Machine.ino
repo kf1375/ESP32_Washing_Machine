@@ -179,6 +179,7 @@ void wash(uint32_t time) {
       milis_delay(8 * 1000);
       set_input_ssr(OFF);
       stop();
+      milis_delay(2000);
     }
     set_input_ssr(OFF);
     stop();

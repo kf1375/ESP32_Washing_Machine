@@ -159,20 +159,29 @@ void fill_water()
         if (PressureState == LOW)
         {
             open_cold_valve();
+            if (TermoState == LOW)
+            {
+                open_hot_valve();
+                set_heater_on();
+            }
+            else
+            {
+                close_hot_valve();
+                set_heater_off();
+            }
         }
         else
         {
             close_cold_valve();
+            close_hot_valve();
         }
 
         if (TermoState == LOW)
         {
-            open_hot_valve();
             set_heater_on();
         }
         else
         {
-            close_hot_valve();
             set_heater_off();
         }
         milis_delay(500);
